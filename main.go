@@ -54,10 +54,9 @@ func (w *worker) do() {
 				w.parentChan <- poisonPill // Pass the poison pill to other workers
 				goto handleRemainingJobsInWorkerChan
 			}
-			w.doHeavyJob(gid) // Otherwise just do normal processing
+			w.doHeavyJob(gid, job) // Otherwise just do normal processing
 		case job := <-w.workerChan:
-			_ = job
-			w.doHeavyJob(gid)
+			w.doHeavyJob(gid, job)
 		case <-w.ctx.Done():
 			log.Printf("Worker #%d terminated", gid)
 			return
@@ -81,7 +80,7 @@ handleRemainingJobsInWorkerChan:
 		select {
 		case job := <-w.workerChan:
 			_ = job
-			w.doHeavyJob(gid)
+			w.doHeavyJob(gid, job)
 			if isParentDone && len(w.workerChan) == 0 { // workerChan is now empty
 				log.Printf("Worker #%d finished", gid)
 				return
@@ -94,8 +93,8 @@ handleRemainingJobsInWorkerChan:
 }
 
 // Simulate actual job runs in long duration.
-func (w *worker) doHeavyJob(gid uint64) {
-	log.Printf("worker #%d is doing the job...", gid)
+func (w *worker) doHeavyJob(gid uint64, job string) {
+	log.Printf("worker #%d is doing the %s job...", gid, job)
 	time.Sleep(1 * time.Second)
 	// If this worker produces more jobs then put those jobs to workerChan
 	// w.workerChan <- "new job"
