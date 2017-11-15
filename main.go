@@ -11,17 +11,17 @@ import (
 	"time"
 )
 
-// Special value used as notification value between parent goroutine and its child workers
+// Special value used as notifier between parent goroutine and its child workers
 const poisonPill = "POISON_PILL"
 
 type worker struct {
 	ctx          context.Context // Context to allow cancel worker at any time
 	wg           *sync.WaitGroup // Global WaitGroup
-	parentChan   chan string     // Channel for distributing jobs from parent to its workers
+	parentChan   chan string     // Channel for distributing jobs from parent goroutine to its workers
 	workerChan   chan string     // Channel for handling new jobs created by workers itself
 }
 
-// Starts a child worker pool.
+// Starts a child worker pool with num workers.
 func startWorkerPool(ctx context.Context, wg *sync.WaitGroup, parentChan chan string, num int) {
 	workerChan := make(chan string, 5000)
 	w := &worker{
@@ -39,8 +39,8 @@ func startWorkerPool(ctx context.Context, wg *sync.WaitGroup, parentChan chan st
 // worker do actual job here.
 func (w *worker) do() {
 	defer w.wg.Done()
-	gid := getGID() // Get go routine ID of current worker, for logging purpose only
-	var isParentDone bool // Indicator for checking if parent go routine is finished or not
+	gid := getGID() // Get goroutine ID of current worker, for logging purpose only
+	var isParentDone bool // Indicator for checking if parent goroutine is finished or not
 
 	// Receives jobs from both parentChan and workerChan.
 	// If receives POISON_PILL from parentChan, then marks the internal isParentDone to true,
@@ -120,7 +120,7 @@ func main() {
 	jobChan <- poisonPill // Send poison pill to notify child workers
 	log.Printf("parent: poison pill sent")
 
-	wg.Wait() // Wait child workers to finished its remaining jobs
+	wg.Wait() // Wait child workers to finish its remaining jobs
 	log.Printf("parent: all child workers ended. exit")
 }
 
