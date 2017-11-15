@@ -49,7 +49,7 @@ func (w *worker) do() {
 		select {
 		case job := <-w.parentChan:
 			if job == poisonPill { // Received poison pill
-				log.Printf("Worker #%d received %s", gid, poisonPill)
+				log.Printf("worker #%d received %s", gid, poisonPill)
 				isParentDone = true
 				w.parentChan <- poisonPill // Pass the poison pill to other workers
 				goto handleRemainingJobsInWorkerChan
@@ -58,7 +58,7 @@ func (w *worker) do() {
 		case job := <-w.workerChan:
 			w.doHeavyJob(gid, job)
 		case <-w.ctx.Done():
-			log.Printf("Worker #%d terminated", gid)
+			log.Printf("worker #%d terminated", gid)
 			return
 		}
 	}
@@ -71,7 +71,7 @@ handleRemainingJobsInWorkerChan:
 
 	// Check if workerChan is empty -> end the worker
 	if isParentDone && len(w.workerChan) == 0 {
-		log.Printf("Worker #%d finished", gid)
+		log.Printf("worker #%d finished", gid)
 		return
 	}
 
@@ -82,11 +82,11 @@ handleRemainingJobsInWorkerChan:
 			_ = job
 			w.doHeavyJob(gid, job)
 			if isParentDone && len(w.workerChan) == 0 { // workerChan is now empty
-				log.Printf("Worker #%d finished", gid)
+				log.Printf("worker #%d finished", gid)
 				return
 			}
 		case <-w.ctx.Done():
-			log.Printf("Worker #%d terminated", gid)
+			log.Printf("worker #%d terminated", gid)
 			return
 		}
 	}
