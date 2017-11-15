@@ -1,5 +1,5 @@
 # poison-pill
-Demonstration of using poison pill as notifier between go routines.
+Demonstration of using poison pill as notifier between goroutines.
 
 ```shell
  $ go run main.go 
