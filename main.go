@@ -54,7 +54,6 @@ func (w *worker) do() {
 				w.parentChan <- poisonPill // Pass the poison pill to other workers
 				goto handleRemainingJobsInWorkerChan
 			}
-
 			w.doHeavyJob(gid) // Otherwise just do normal processing
 		case job := <-w.workerChan:
 			_ = job
